@@ -16,3 +16,10 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', function () {
     return view('welcome');
 });
+
+/**
+ * GUEST ROUTE
+ */
+Route::group(['as' => 'guest.', 'namespace' => 'App\Http\Controllers'], function () {
+    Route::get('/login', 'LoginController@index')->name('login');
+});
