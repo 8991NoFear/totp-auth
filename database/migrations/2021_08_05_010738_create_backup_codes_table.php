@@ -3,6 +3,7 @@
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
+use Illuminate\Support\Facades\DB;
 
 class CreateBackupCodesTable extends Migration
 {
@@ -16,10 +17,11 @@ class CreateBackupCodesTable extends Migration
         Schema::create('backup_codes', function (Blueprint $table) {
             $table->id();
             $table->foreignId('user_id');
+            // $table->foreign('user_id')->references('id')->on('users');
             $table->string('code', 1024);
-            $table->timestamp('expired_at');
+            $table->timestamp('expired_at')->default(DB::raw('CURRENT_TIMESTAMP'));
             $table->timestamp('used_at')->nullable();
-            $table->timestamps();
+            $table->timestamp('created_at')->default(DB::raw('CURRENT_TIMESTAMP'));
         });
     }
 
