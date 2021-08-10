@@ -65,7 +65,8 @@ form {
     padding: 1em .5em .5em;
     padding-left: 2em;
     outline: none;
-    margin: 1.5em auto;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
     transition: all .5s ease;
 }
 
@@ -91,4 +92,34 @@ form {
 .btn:focus {
     background-color: #008080;
     color: #fff;
+}
+
+#invalid {
+    padding-left: 2em;
+    text-align: left;
+    color: red;
+}
+
+.is-invalid {
+    color: red;
+    border-bottom: 1px solid red;
+}
+
+.is-invalid:focus {
+    color: black;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.remember_me {
+    margin-top: 1.5em;
 }

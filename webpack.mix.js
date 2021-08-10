@@ -16,4 +16,4 @@ const mix = require('laravel-mix');
 //         //
 //     ]);
 
-mix.postCss('resources/css/guest/login.css', 'public/css/guest');
+mix.postCss('resources/css/auth/login.css', 'public/css/auth');
