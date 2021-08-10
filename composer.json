@@ -4,13 +4,20 @@
     "description": "The Laravel Framework.",
     "keywords": ["framework", "laravel"],
     "license": "MIT",
+    "repositories": {
+        "laravel2fa": {
+           "type": "vcs",
+            "url": "https://github.com/8991NoFear/TOTP-Laravel.git"
+        }
+    },
     "require": {
         "php": "^7.3|^8.0",
         "fideloper/proxy": "^4.4",
         "fruitcake/laravel-cors": "^2.0",
         "guzzlehttp/guzzle": "^7.0.1",
         "laravel/framework": "^8.40",
-        "laravel/tinker": "^2.5"
+        "laravel/tinker": "^2.5",
+        "pragmarx/google2fa": "^8.0"
     },
     "require-dev": {
         "facade/ignition": "^2.5",
