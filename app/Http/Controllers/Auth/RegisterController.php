@@ -61,7 +61,10 @@ class RegisterController extends Controller
         
         // send email and nofiy email is sent
         Mail::to($credentials['email'])->send(new Registered($user->id, $username, $token));
-        return view('auth.verify-account');
+        return view('auth.verify-account', [
+            'email' => $credentials['email'],
+            'expired_at' => $expiry,
+        ]);
     }
 
     public function verify(Request $request, $id, $token)
