@@ -30,26 +30,35 @@ class RegisterController extends Controller
                 ->withErrors(['email' => 'Account exists. Please choose another email!']);
         }
 
-        // create a record in 'users' table
         $nameArr = explode('@', $credentials['email']);
         $nameArr = explode('.', $nameArr[0]);
         $username = $nameArr[0];
-        $user = User::create([
-            'username' => $username,
-            'email' => $credentials['email'],
-            'password' => Hash::make($credentials['password']),
-        ]);
-
-        // create a record in 'password_resets' table
+        
         $token = bin2hex(openssl_random_pseudo_bytes(32));
         $expiry = time() + config('authentication.password_reset.token_timeout');
         $expiry = date("Y-m-d H:i:s", $expiry);
-        PasswordReset::create([
-            'email' => $credentials['email'],
-            'token' => $token,
-            'expired_at' => $expiry,
-        ]);
 
+        DB::beginTransaction();
+        try {
+            // create a record in 'users' table
+            $user = User::create([
+                'username' => $username,
+                'email' => $credentials['email'],
+                'password' => Hash::make($credentials['password']),
+            ]);
+
+            // create a record in 'password_resets' table
+            PasswordReset::create([
+                'email' => $credentials['email'],
+                'token' => $token,
+                'expired_at' => $expiry,
+            ]);
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return abort(500);
+        }
+        
         // send email and nofiy email is sent
         Mail::to($credentials['email'])->send(new Registered($user->id, $username, $token));
         return view('auth.verify-account');
