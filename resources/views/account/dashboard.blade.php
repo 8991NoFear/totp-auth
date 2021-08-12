@@ -1,2 +1,1 @@
-<?php
-echo "hello world";
+@extends('account.layouts.app')
