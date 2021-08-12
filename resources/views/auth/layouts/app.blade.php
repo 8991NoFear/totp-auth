@@ -19,14 +19,14 @@
                 <span class="company__logo">
                     <h2><span class="fa fa-android"></span></h2>
                 </span>
-                <h4 class="company_title">Your Company Logo</h4>
+                <h4 class="company_title">PROJECT III</h4>
             </div>
             @yield('right-pane')
         </div>
     </div>
     <!-- Footer -->
     <div class="container-fluid text-center footer">
-        Coded with &hearts; by <a href="https://github.com/8991NoFear">BinhLD.</a></p>
+        Coded with &hearts; by <a href="https://github.com/8991NoFear" target="_blank">BinhLD.</a></p>
     </div>
 </body>
 

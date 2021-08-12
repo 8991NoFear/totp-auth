@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\User;
+namespace App\Http\Controllers\Account;
 
 use App\Http\Controllers\Controller;
 
@@ -9,6 +9,6 @@ class DashboardController extends Controller
 
     public function index()
     {
-        return view('user.dashboard');
+        return view('account.dashboard');
     }
 }

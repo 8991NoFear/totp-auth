@@ -10,7 +10,12 @@ class User extends Model
     use HasFactory;
 
     protected $fillable = [
+        'username',
         'email',
         'password',
     ];
+
+    public function resetPassword() {
+        return $this->hasOne(PasswordReset::class, 'email', 'email');
+    }
 }

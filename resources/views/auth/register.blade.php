@@ -1,15 +1,15 @@
 @extends('auth.layouts.app')
 
-@section('title', 'Login')
+@section('title', 'Register')
 
 @section('right-pane')
 <div class="col-md-8 col-xs-12 col-sm-12 login_form ">
 	<div class="container-fluid">
 		<div class="row">
-			<h2>LOGIN</h2>
+			<h2>REGISTER</h2>
 		</div>
 		<div class="row">
-			<form control="" class="form-group" action="{{ route('auth.login.login') }}" method="post">
+			<form control="" class="form-group" action="{{ route('auth.register.register') }}" method="post">
 				@CSRF
 				<div class="row">
 					<input type="text" name="email" id="username" class="form__input @error('email') is-invalid @enderror " placeholder="Email" value="{{ old('email', '') }}">
@@ -27,9 +27,8 @@
 					</div>
 					@enderror
 				</div>
-				<div class="row remember_me">
-					<input type="checkbox" name="remember_me" id="remember_me" class="">
-					<label for="remember_me">Remember Me!</label>
+                <div class="row">
+					<input type="password" name="password_confirmation" id="password" class="form__input" placeholder="Re-Password">
 				</div>
 				<div class="row">
 					<input type="submit" value="Submit" class="btn">
@@ -37,7 +36,7 @@
 			</form>
 		</div>
 		<div class="row">
-			<p>Don't have an account? <a href="{{ route('auth.register.index') }}">Register Here</a></p>
+			<p>Already have an account? <a href="{{ route('auth.login.index') }}">Login Here</a></p>
 		</div>
 	</div>
 </div>
