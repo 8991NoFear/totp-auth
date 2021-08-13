@@ -27,8 +27,8 @@ class LoginController extends Controller
         if ($user != null) {
             if (Hash::check($credentials['password'],  $user->password)) {
                 // Email&Password Login Success
-                // Save user identifier into session
-                $request->session()->put('userId', $user->id);
+                $request->session()->put('userId', $user->id); // Save user identifier into session
+                $request->session()->regenerateToken(); // Regenerate Token
 
                 // Return 2fa login page if user enabled 2fa 
                 // if ($user->secret_key != null) {
