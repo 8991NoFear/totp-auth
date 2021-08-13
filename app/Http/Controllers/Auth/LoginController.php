@@ -13,6 +13,13 @@ use PragmaRX\Google2FA\Google2FA;
 
 class LoginController extends Controller
 {
+    public $google2fa;
+
+    public function __construct() {
+        $this->google2fa = new Google2FA();
+        $this->google2fagoogle2fa->setAlgorithm(SupportConstants::SHA256); // TRUNCATE(HMAC-SHA256(K, T)) instead of TRUNCATE(HMAC-SHA1(K, C))
+    }
+    
     public function index() {
         return view('auth.login');
     }
@@ -56,8 +63,7 @@ class LoginController extends Controller
 
         // TOTP Check
         $user = User::find($request->session()->get('userId'));
-        $google2fa = new Google2FA();
-        if ($google2fa->verify($credentials['totp_code'], $user->secret_key)) {
+        if ($this->google2fa->verify($credentials['totp_code'], $user->secret_key)) {
             $request->session()->put('user2FA', true);
             return redirect(route('user.dashboard.index'));
         }
