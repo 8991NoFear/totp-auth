@@ -13,13 +13,13 @@
     <div class="row m-0">
         <div class="col-md-6 offset-md-3">
             <div class="d-flex justify-content-center align-items-center flex-column vh-100 text-center">
-                <img src="{{ asset('/default-images/task_alt_black_48dp.svg') }}" width="5%" alt="tick" srcset="">
+                <img src="{{ asset('/default-images/task_alt_black_48dp.svg') }}" width="10%" alt="tick" srcset="">
                 <h2>Thank you</h2>
                 <p class="fs-4">You have verified your account</p>
                 <p>Our website support Google Two Factor Authentication (Google 2FA), would you like to enable it now? Google 2FA will improve your account security but not require.</p>
                 <div class="w-100 flex-row justify-content-around">
                     <a href="{{ route('auth.login.index') }}" class="btn btn-outline-secondary">NO, maybe later</a>
-                    <a href="#" class="btn btn-primary">YES, set up it now</a>
+                    <a href="{{ route('account.security.setup2fa') }}" class="btn btn-primary">YES, setup it now</a>
                 </div>
             </div>
         </div>

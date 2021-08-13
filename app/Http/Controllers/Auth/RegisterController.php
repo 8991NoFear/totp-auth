@@ -30,12 +30,9 @@ class RegisterController extends Controller
                 ->withErrors(['email' => 'Account exists. Please choose another email!']);
         }
 
-        $nameArr = explode('@', $credentials['email']);
-        $nameArr = explode('.', $nameArr[0]);
-        $username = $nameArr[0];
-        
+        $username = $this->getUsernameFromEmail($credentials['email']);
         $token = bin2hex(openssl_random_pseudo_bytes(32));
-        $expiry = time() + config('authentication.password_reset.token_timeout');
+        $expiry = time() + config('security.password_reset.token_timeout', 10800);
         $expiry = date("Y-m-d H:i:s", $expiry);
 
         DB::beginTransaction();
@@ -59,17 +56,46 @@ class RegisterController extends Controller
             return abort(500);
         }
         
-        // send email and nofiy email is sent
-        Mail::to($credentials['email'])->send(new Registered($user->id, $username, $token));
+        Mail::to($credentials['email'])->send(new Registered($user->id, $username, $token)); // send email
         return view('auth.verify-account', [
             'email' => $credentials['email'],
             'expired_at' => $expiry,
         ]);
     }
 
+    private function getUsernameFromEmail($email) {
+        $nameArr = explode('@', $email);
+        $nameArr = explode('.', $nameArr[0]);
+        return $nameArr[0];
+    }
+
     public function verify(Request $request, $id, $token)
     {
-        // validate;
+        $this->validateVerificationRequest($id, $token); // validate request URI
+        
+        $user = $this->findUserByIdOrFail($id);
+        $resetPassword = $user->resetPassword;
+
+        $isValid = strtotime($resetPassword->expired_at) >= time();
+        $isValid = $isValid && ($token == $resetPassword->token);
+        if ($isValid) {
+            $user->email_verified_at = date('Y-m-d H:i:s');
+            $resetPassword->expired_at = date('Y-m-d H:i:s');
+            DB::beginTransaction();
+            try {
+                $user->save();
+                $resetPassword->save();
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return abort(500); // not handle
+            }
+            return view('account.verify-complete');
+        }
+        return abort(400); // not handle
+    }
+
+    private function validateVerificationRequest($id, $token) {
         $validator = Validator::make([
             'id' => $id,
             'token' => $token
@@ -80,25 +106,13 @@ class RegisterController extends Controller
         if ($validator->fails()) {
             return abort(400);
         }
+    }
 
+    private function findUserByIdOrFail($id) {
         $user = User::find($id);
-        $resetPassword = $user->resetPassword;
-        if (strtotime($resetPassword->expired_at) >= time()) {
-            if ($token == $resetPassword->token) {
-                DB::beginTransaction();
-                try {
-                    $user->email_verified_at = date('Y-m-d H:i:s');
-                    $resetPassword->expired_at = date('Y-m-d H:i:s');
-                    $user->save();
-                    $resetPassword->save();
-                    DB::commit();
-                } catch (\Throwable $e) {
-                    DB::rollBack();
-                    return abort(500);
-                }
-                return view('account.verify-complete');
-            }
+        if ($user == null) {
+            return abort(400);
         }
-        return abort(400);
+        return $user;
     }
 }
