@@ -17,11 +17,11 @@ class AuthAdvanced
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->session()->has('userId')) {
-            $userId = $request->session()->get('userId');
+        if ($request->session()->has('user.userId')) {
+            $userId = $request->session()->get('user.userId');
             $user = User::find($userId);
             if ($user->secret_key != null) {
-                if ($request->session()->has('user2FA')) {
+                if ($request->session()->has('user.loginedAdvance')) {
                     return $next($request);
                 }
                 return redirect(route('auth.login.index2fa'));

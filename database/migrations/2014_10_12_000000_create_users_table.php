@@ -24,12 +24,14 @@ class CreateUsersTable extends Migration
         Schema::create('users', function (Blueprint $table) {
             $table->id();
             $table->string('username');
+            $table->string('avatar')->nullable();
             $table->string('email')->unique();
             // $table->foreign('email')->references('email')->on('password_resets');
             $table->string('password');
             $table->timestamp('email_verified_at')->nullable();
             $table->string('remember_token', 1024)->nullable();
             $table->string('secret_key', 1024)->nullable();
+            $table->boolean('enabled_2fa_once')->default(false);
             $table->timestamps();
         });
     }

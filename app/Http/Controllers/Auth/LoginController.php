@@ -9,32 +9,46 @@ use Illuminate\Http\Request as HttpRequest;
 
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Validator;
+
+use PragmaRX\Google2FA\Support\Constants as SupportConstants;
 use PragmaRX\Google2FA\Google2FA;
 
 class LoginController extends Controller
 {
-    public function index() {
+    public $google2fa;
+
+    public function __construct()
+    {
+        $this->google2fa = new Google2FA();
+        $this->google2fa->setAlgorithm(SupportConstants::SHA1); // TRUNCATE(HMAC-SHA256(K, T)) instead of TRUNCATE(HMAC-SHA1(K, C))
+    }
+    
+    public function index()
+    {
         return view('auth.login');
     }
 
-    public function index2FA() {
+    public function index2FA()
+    {
         return view('auth.login2fa');
     }
 
-    public function login(LoginRequest $request) {
+    public function login(LoginRequest $request)
+    {
         $credentials = $request->only(['email', 'password', 'remember_me']);
         $user = User::where('email', $credentials['email'])->first();
         if ($user != null) {
-            if (Hash::check($credentials['password'],  $user->password)) {
-                // Email&Password Login Success
-                // Save user identifier into session
-                $request->session()->put('userId', $user->id);
+            if (Hash::check($credentials['password'],  $user->password)) { // Email&Password Login
+                $request->session()->put('user.userId', $user->id); // Save user id into session
+                $request->session()->put('user.loginedNormal', true); // remember logined normal
+                $request->session()->regenerate(); // Regenerate session id
 
-                // Return 2fa login page if user enabled 2fa 
-                // if ($user->secret_key != null) {
-                //     return view('auth.login2fa');
-                // }
-                return redirect(route('auth.login.index2fa'));
+                if ($user->secret_key != null) { // Return 2fa login page if user enabled 2fa 
+                    redirect(route('auth.login.index2fa'));
+                }
+                
+                // else
+                return redirect(route('account.dashboard.index'));
             }
         }
         return back()
@@ -50,18 +64,17 @@ class LoginController extends Controller
             'totp_code' => 'required|digits:6',
         ]);
         if ($validator->fails()) {
-            $err = 'TOTP code must be a number with 6 ditgits';
-            return view('auth.login2fa', compact('err'));
+            return back()->with('totp-error', 'TOTP code must be a number with 6 ditgits');
         }
+        $totpCode = $credentials['totp_code'];
 
         // TOTP Check
-        $user = User::find($request->session()->get('userId'));
-        $google2fa = new Google2FA();
-        if ($google2fa->verify($credentials['totp_code'], $user->secret_key)) {
-            $request->session()->put('user2FA', true);
-            return redirect(route('user.dashboard.index'));
+        $userId = $request->session()->get('user.userId');
+        $user = User::find($userId);
+        if ($this->google2fa->verify($totpCode, $user->secret_key)) {
+            $request->session()->put('user.loginedAdvance', true); // remember logined advance
+            return redirect(route('account.dashboard.index'));
         }
-        $err = 'wrong TOTP code';
-        return view('auth.login2fa', compact('err'));
+        return back()->with('totp-error', 'Wrong TOTP Code');
     }
 }

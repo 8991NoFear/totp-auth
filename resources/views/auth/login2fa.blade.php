@@ -12,10 +12,10 @@
             <form control="" class="form-group" action="{{ route('auth.login.login2fa') }}" method="post">
                 @CSRF
                 <div class="row">
-                    <input type="number" name="totp_code" id="username" class="form__input @if(isset($err)) is-invalid @endif " placeholder="6 digits TOTP Code">
-                    @if(isset($err))
+                    <input type="number" name="totp_code" id="username" class="form__input @if(session()->has('totp-error')) is-invalid @endif " placeholder="6 digits TOTP Code">
+                    @if(session()->has('totp-error'))
                     <div id="invalid">
-                        {{ $err }}
+                        {{ session()->get('totp-error') }}
                     </div>
                     @endif
                 </div>

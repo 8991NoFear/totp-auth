@@ -22,25 +22,46 @@ Route::get('/', function () {
  */
 Route::group([
     'as' => 'auth.login.',
-    'namespace' => 'App\Http\Controllers\Auth'
+    'namespace' => 'App\Http\Controllers\Auth',
+    'prefix' => 'login'
 ], function () {
-    Route::get('/login', 'LoginController@index')->name('index');
-    Route::post('/login', 'LoginController@login')->name('login');
-    Route::get('/login/login2fa', 'LoginController@index2fa')->name('index2fa')->middleware('auth.normal');
-    Route::post('/login/login2fa', 'LoginController@login2fa')->name('login2fa')->middleware('auth.normal');
+    Route::get('/', 'LoginController@index')->name('index');
+    Route::post('/', 'LoginController@login')->name('login');
+    Route::get('/login2fa', 'LoginController@index2fa')->name('index2fa')->middleware('auth.normal');
+    Route::post('/login2fa', 'LoginController@login2fa')->name('login2fa')->middleware('auth.normal');
 });
 
 /**
  * REGISTER ROUTE
  */
+Route::group([
+    'as' => 'auth.register.',
+    'namespace' => 'App\Http\Controllers\Auth',
+    'prefix' => 'register',
+], function () {
+    Route::get('/', 'RegisterController@index')->name('index');
+    Route::post('/', 'RegisterController@register')->name('register');
+    Route::get('/verify/{id}/{token}', 'RegisterController@verify')->name('verify');
+});
+
+/**
+ * LOGOUT ROUTE
+ */
+
+Route::post('/auth/logout', ['App\Http\Controllers\Auth\LogoutController', 'logout'])->name('auth.logout');
 
 /**
  * USER ROUTE
  */
 Route::group([
-    'as' => 'user.',
-    'namespace' => 'App\Http\Controllers\User',
+    'as' => 'account.',
+    'namespace' => 'App\Http\Controllers\Account',
     'middleware' => 'auth.advanced',
+    'prefix' => 'account'
 ], function () {
-    Route::get('/user/dashboard', 'DashboardController@index')->name('dashboard.index');
+    Route::get('dashboard', 'DashboardController@index')->name('dashboard.index');
+
+    Route::get('security', 'SecurityController@index')->name('security.index');
+    Route::get('setup-google2fa', 'SecurityController@setupGoogle2FA')->name('security.setup-google2fa');
+    Route::post('setup-google2fa', 'SecurityController@verifySetupGoogle2FA')->name('security.verify-setup-google2fa');
 });
