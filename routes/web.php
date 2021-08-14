@@ -62,6 +62,6 @@ Route::group([
     Route::get('dashboard', 'DashboardController@index')->name('dashboard.index');
 
     Route::get('security', 'SecurityController@index')->name('security.index');
-    Route::get('setup-google2fa', 'SecurityController@setupGoogle2FA')->name('security.setup2fa');
-    Route::post('setup-google2fa', 'SecurityController@verifySetupGoogle2FA')->name('security.verify-setup2fa');
+    Route::get('setup-google2fa', 'SecurityController@setupGoogle2FA')->name('security.setup-google2fa');
+    Route::post('setup-google2fa', 'SecurityController@verifySetupGoogle2FA')->name('security.verify-setup-google2fa');
 });

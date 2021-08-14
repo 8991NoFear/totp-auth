@@ -17,7 +17,7 @@
 
     <div class="container-fluid m-0">
         <div class="row">
-            <form action="{{ route('account.security.verify-setup2fa') }}" method="post">
+            <form action="{{ route('account.security.verify-setup-google2fa') }}" method="post">
                 @CSRF
                 <img class="mb-2 mt-2" width="20%" src="data:image/png;base64, {{ $qrcode }}" alt="qr-code" />
                 <h2 class="mb-3 fw-normal">Almost Done!</h2>
@@ -30,7 +30,8 @@
                         *{{ session()->get('totp-err') }}
                     </div>
                     @endif
-                    <button class="w-75 btn btn-lg btn-primary mt-4" type="submit">Submit</button>
+                    <a href="{{ route('account.security.index') }}" class="btn btn-lg btn-outline-secondary m-2 mt-4 w-25">Cancel</a>
+                    <button class="btn btn-lg btn-primary m-2 mt-4 w-25" type="submit">Submit</button>
                 </div>
                 <p class="mt-4 text-muted">&copy; 2017–2021</p>
             </form>

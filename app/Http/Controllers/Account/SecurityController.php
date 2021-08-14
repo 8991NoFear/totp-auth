@@ -27,10 +27,11 @@ class SecurityController extends Controller
         $this->google2fa->setAlgorithm(SupportConstants::SHA1); // TRUNCATE(HMAC-SHA256(K, T)) instead of TRUNCATE(HMAC-SHA1(K, C))
     }
 
-    public function index()
+    public function index(Request $request)
     {
-        dd(session()->all());
-        return view('account.security');
+        $userId = $request->session()->get('user.userId');
+        $user = User::with('backupCodes')->find($userId);
+        return view('account.security', compact('user'));
     }
 
     public function setupGoogle2FA(Request $request)

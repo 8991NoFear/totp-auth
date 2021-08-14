@@ -42,7 +42,7 @@
         </symbol>
     </svg>
 
-    <main>
+    <main class="overflow-auto">
         <div class="d-flex flex-column flex-shrink-0 p-3" style="width: 20%;">
             <a href="https://getbootstrap.com/"
                 class="d-flex align-items-center mb-3 mb-md-0 me-md-auto link-dark text-decoration-none">
@@ -77,27 +77,32 @@
             </ul>
         </div>
         <div class="d-flex flex-column flex-shrink-0 p-3" style="width: 80%;">
-            <div class="container-fluid">
-                <div class="d-flex justify-content-end">
-                    <div class="dropdown">
-                        <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
-                            id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="{{ asset('/default-images/account_circle_black_48dp.svg') }}" alt="" width="32" height="32"
-                                class="rounded-circle me-2">
-                            <strong>BinhLD</strong>
-                        </a>
-                        <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2" style="">
-                            <li><a class="dropdown-item" href="{{ route('account.dashboard.index') }}">Home</a></li>
-                            <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="{{ route('account.security.index') }}">Security</a></li>
-                            <li>
-                                <hr class="dropdown-divider">
-                            </li>
-                            <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal">Logout</button></li>
-                        </ul>
-                    </div>
+            <div class="d-flex justify-content-end">
+                <div class="dropdown">
+                    <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
+                        id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
+                        @if ($user->avatar != null)
+                        <img src="{{ asset($user->avatar) }}" alt="" width="32" height="32"
+                            class="rounded-circle me-2">
+                        @else
+                        <img src="{{ asset('/default-images/account_circle_black_48dp.svg') }}" alt="" width="32" height="32"
+                            class="rounded-circle me-2">
+                        @endif
+                        <strong>{{ $user->username }}</strong>
+                    </a>
+                    <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2" style="">
+                        <li><a class="dropdown-item" href="{{ route('account.dashboard.index') }}">Home</a></li>
+                        <li><a class="dropdown-item" href="#">Profile</a></li>
+                        <li><a class="dropdown-item" href="{{ route('account.security.index') }}">Security</a></li>
+                        <li>
+                            <hr class="dropdown-divider">
+                        </li>
+                        <li><button type="button" class="dropdown-item" data-bs-toggle="modal" data-bs-target="#exampleModal">Logout</button></li>
+                    </ul>
                 </div>
             </div>
+
+            @yield('main')
         </div>
     </main>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"
