@@ -10,7 +10,7 @@
         integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
 
     <!-- Custom styles for this template -->
-    <link href="{{ route('/css/account/sidebars.css') }}" rel="stylesheet">
+    <link href="{{ asset('/css/account/sidebars.css') }}" rel="stylesheet">
 
 <body class="bg-light">
 
@@ -51,7 +51,7 @@
             <hr>
             <ul class="nav nav-pills flex-column mb-auto">
                 <li class="nav-item">
-                    <a href="#" class="nav-link active" aria-current="page">
+                    <a href="{{ route('account.dashboard.index') }}" class="nav-link @yield('home-status')" aria-current="page">
                         <svg class="bi me-2" width="16" height="16">
                             <use xlink:href="#home"></use>
                         </svg>
@@ -59,7 +59,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link link-dark">
+                    <a href="#" class="nav-link @yield('profile-status')">
                         <svg class="bi me-2" width="16" height="16">
                             <use xlink:href="#speedometer2"></use>
                         </svg>
@@ -67,7 +67,7 @@
                     </a>
                 </li>
                 <li>
-                    <a href="#" class="nav-link link-dark">
+                    <a href="{{ route('account.security.index') }}" class="nav-link @yield('security-status')">
                         <svg class="bi me-2" width="16" height="16">
                             <use xlink:href="#people-circle"></use>
                         </svg>
@@ -82,14 +82,14 @@
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center link-dark text-decoration-none dropdown-toggle"
                             id="dropdownUser2" data-bs-toggle="dropdown" aria-expanded="false">
-                            <img src="./account_files/mdo.png" alt="" width="32" height="32"
+                            <img src="{{ asset('/default-images/account_circle_black_48dp.svg') }}" alt="" width="32" height="32"
                                 class="rounded-circle me-2">
                             <strong>BinhLD</strong>
                         </a>
                         <ul class="dropdown-menu text-small shadow" aria-labelledby="dropdownUser2" style="">
-                            <li><a class="dropdown-item" href="#">Home</a></li>
+                            <li><a class="dropdown-item" href="route('account.dashboard.index')">Home</a></li>
                             <li><a class="dropdown-item" href="#">Profile</a></li>
-                            <li><a class="dropdown-item" href="#">Security</a></li>
+                            <li><a class="dropdown-item" href="{{ route('account.security.index') }}">Security</a></li>
                             <li>
                                 <hr class="dropdown-divider">
                             </li>
