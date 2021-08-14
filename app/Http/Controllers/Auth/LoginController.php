@@ -38,15 +38,15 @@ class LoginController extends Controller
         $credentials = $request->only(['email', 'password', 'remember_me']);
         $user = User::where('email', $credentials['email'])->first();
         if ($user != null) {
-            if (Hash::check($credentials['password'],  $user->password)) {
-                // Email&Password Login Success
-                $request->session()->put('userId', $user->id); // Save user identifier into session
+            if (Hash::check($credentials['password'],  $user->password)) { // Email&Password Login
+                $request->session()->put('user.userId', $user->id); // Save user id into session
+                $request->session()->put('user.loginedNormal', true); // remember logined normal
                 $request->session()->regenerate(); // Regenerate session id
 
-                // Return 2fa login page if user enabled 2fa 
-                if ($user->secret_key != null) {
+                if ($user->secret_key != null) { // Return 2fa login page if user enabled 2fa 
                     redirect(route('auth.login.index2fa'));
                 }
+                
                 // else
                 return redirect(route('account.dashboard.index'));
             }
@@ -69,11 +69,10 @@ class LoginController extends Controller
         $totpCode = $credentials['totp_code'];
 
         // TOTP Check
-        $userId = $request->session()->get('userId');
+        $userId = $request->session()->get('user.userId');
         $user = User::find($userId);
         if ($this->google2fa->verify($totpCode, $user->secret_key)) {
-            $request->session()->put('user2FA', true);
-            $request->session()->regenerate(); // Regenerate session id
+            $request->session()->put('user.loginedAdvance', true); // remember logined advance
             return redirect(route('account.dashboard.index'));
         }
         return back()->with('totp-error', 'Wrong TOTP Code');

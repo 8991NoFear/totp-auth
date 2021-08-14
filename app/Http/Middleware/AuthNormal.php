@@ -16,7 +16,7 @@ class AuthNormal
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->session()->has('userId')) {
+        if ($request->session()->has('user.loginedNormal')) {
             return $next($request);
         }
         return redirect(route('auth.login.index'));
