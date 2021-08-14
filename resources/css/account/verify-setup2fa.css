@@ -1,0 +1,38 @@
+.my-form-control {
+    border: 0px solid transparent;
+    border-radius: 0;
+    border-bottom: 1px solid #aaa;
+    padding: 1em .0.5em;
+    outline: none;
+    margin-top: 1.5em;
+    margin-bottom: 0.5em;
+    transition: all .5s ease;
+}
+
+.my-form-control:focus {
+    border-bottom-color: #008080;
+    box-shadow: 0 0 5px rgba(0, 80, 80, .4);
+    border-radius: 4px;
+    background-color: white;
+}
+
+/* Chrome, Safari, Edge, Opera */
+input::-webkit-outer-spin-button,
+input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* Firefox */
+input[type=number] {
+    -moz-appearance: textfield;
+}
+
+.invalid {
+    color: red;
+    border-bottom: 1px solid red;
+}
+
+.invalid:focus {
+    color: black;
+}

@@ -45,6 +45,12 @@ Route::group([
 });
 
 /**
+ * LOGOUT ROUTE
+ */
+
+Route::post('/auth/logout', ['App\Http\Controllers\Auth\LogoutController', 'logout'])->name('auth.logout');
+
+/**
  * USER ROUTE
  */
 Route::group([
@@ -54,4 +60,8 @@ Route::group([
     'prefix' => 'account'
 ], function () {
     Route::get('dashboard', 'DashboardController@index')->name('dashboard.index');
+
+    Route::get('security', 'SecurityController@index')->name('security.index');
+    Route::get('setup-google2fa', 'SecurityController@setupGoogle2FA')->name('security.setup2fa');
+    Route::post('setup-google2fa', 'SecurityController@verifySetupGoogle2FA')->name('security.verify-setup2fa');
 });
