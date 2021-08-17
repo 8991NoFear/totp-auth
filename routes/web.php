@@ -47,11 +47,25 @@ Route::group([
 /**
  * LOGOUT ROUTE
  */
-
-Route::post('/auth/logout', ['App\Http\Controllers\Auth\LogoutController', 'logout'])->name('auth.logout');
+Route::post('/auth/logout', ['App\Http\Controllers\Auth\LogoutController', 'logout'])
+    ->middleware('auth.advanced')
+    ->name('auth.logout');
 
 /**
- * USER ROUTE
+ * CONFIRM PASSWORD ROUTE
+ */
+Route::group([
+    'as' => 'auth.',
+    'namespace' => 'App\Http\Controllers\Auth',
+    'prefix' => 'confirm-password',
+    'middleware' => 'auth.advanced'
+], function () {
+    Route::get('/', 'ConfirmPasswordController@index')->name('confirm-password.index');
+    Route::post('/', 'ConfirmPasswordController@confirm')->name('confirm-password');
+});
+
+/**
+ * ACCOUNT ROUTE
  */
 Route::group([
     'as' => 'account.',
@@ -62,6 +76,13 @@ Route::group([
     Route::get('dashboard', 'DashboardController@index')->name('dashboard.index');
 
     Route::get('security', 'SecurityController@index')->name('security.index');
-    Route::get('setup-google2fa', 'SecurityController@setupGoogle2FA')->name('security.setup-google2fa');
-    Route::post('setup-google2fa', 'SecurityController@verifySetupGoogle2FA')->name('security.verify-setup-google2fa');
+    Route::get('setup-google2fa', 'SecurityController@setupGoogle2FA')
+        ->middleware('password.confirmed')
+        ->name('security.setup-google2fa');
+    Route::post('setup-google2fa', 'SecurityController@verifySetupGoogle2FA')
+        ->middleware('password.confirmed')
+        ->name('security.verify-setup-google2fa');
+    Route::post('setup-google2fa/turn-off', 'SecurityController@turnOffGoogle2FA')
+        ->middleware('password.confirmed')
+        ->name('security.turn-off-google2fa');
 });

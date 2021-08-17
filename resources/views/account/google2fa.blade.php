@@ -17,6 +17,15 @@
 
     <div class="container-fluid m-0">
         <div class="row">
+            @if ($user->secret_key != null)
+            <div class="col-sm-6 offset-sm-3 mt-3">
+            <div class="d-flex flex-row justify-content-between align-items-center border rounded-3 p-3">
+                <p class="p-0 m-0">Google2FA has turned on in 23 Feb, 2018</p>
+                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                    data-bs-target="#exampleModal" id="toggleBtn" data="off">TURN OFF</button>
+            </div>
+            </div>
+            @endif
             <form action="{{ route('account.security.verify-setup-google2fa') }}" method="post">
                 @CSRF
                 <img class="mb-2 mt-2" width="20%" src="data:image/png;base64, {{ $qrcode }}" alt="qr-code" />
@@ -37,6 +46,30 @@
             </form>
         </div>
     </div>
+
+    @if ($user->secret_key != null)
+    <!-- Modal -->
+    <div class="modal fade text-start" id="exampleModal" tabindex="-1" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="exampleModalLabel">Turn off Google2FA</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    Are you sure?
+                </div>
+                <div class="modal-footer">
+                    <form action="{{ route('account.security.turn-off-google2fa') }}" method="post">
+                        @CSRF
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, I don't</button>
+                        <button type="submit" class="btn btn-primary" id="submitBtn">Yes, I do</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
 </body>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.min.js"
     integrity="sha384-cVKIPhGWiC2Al4u+LWgxfKTRIcfu0JTxR+EQDz/bgldoEyl4H0zUF0QKbrJ0EcQF" crossorigin="anonymous">

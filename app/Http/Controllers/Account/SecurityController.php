@@ -38,19 +38,9 @@ class SecurityController extends Controller
     {
         $userId = $request->session()->get('user.userId');
         $user = User::find($userId);
-        if(/*$request->session()->has('user.confirmed_password_at')*/ true) {
-            // $confirmedAt = $request->session()->get('user.confirmed_password_at');
-            // $confirmedTimeout = config('security.password_resets.token_timeout', 10800);
-            // $isValid = time() < (strtotime($confirmedAt) + $confirmedTimeout);
-            if (/*$isValid*/ true) { // password confirmed lately
-                $g2faRes = $this->doSetupGoogle2FA();
-                $request->session()->put('user.temp_secret_key', $g2faRes['secret_key']);
-                return view('account.google2fa', ['qrcode' => $g2faRes['qr_code']]);
-            }
-        }
-        dd("oke");
-        // need verify
-        abort(400); // I don't know how to handle this situation
+        $g2faRes = $this->doSetupGoogle2FA();
+        $request->session()->put('user.temp_secret_key', $g2faRes['secret_key']);
+        return view('account.google2fa', ['qrcode' => $g2faRes['qr_code'], 'user' => $user]);
     }
 
     public function verifySetupGoogle2FA(Request $request)
@@ -76,13 +66,22 @@ class SecurityController extends Controller
 
                 $request->session()->forget('user.temp_secret_key'); // clear secret_key in session
 
-                // back to dashboard with alert
-                return redirect(route('account.dashboard.index')); // ->with('alert-class', 'alert-success');
+                // back with alert
+                return redirect(route('account.security.index')); // ->with('alert-class', 'alert-success');
             } else {
                 return back()->with('totp-err', 'Wrong TOTP Code');
             }
         }
         return abort(400); // I don't know how to handle this situation
+    }
+
+    public function turnOffGoogle2FA(Request $request)
+    {
+        $userId = $request->session()->get('user.userId');
+        $user = User::find($userId);
+        $user->secret_key = null;
+        $user->save();
+        return redirect(route('account.security.index'));
     }
 
     private function doSetupGoogle2FA()
