@@ -80,14 +80,19 @@
             </td>
             <td class="text-end"><img src="{{ asset('/default-images/chevron_right_black_24dp.svg') }}" alt="arrow" srcset=""></td>
         </tr>
-        <tr class="noselect" onclick="window.location='{{ route('account.security.setup-backup-code') }}';">
+        <tr class="noselect" onclick="window.location='{{ route('account.security.view-backup-code') }}';">
             <td class="col-sm-6">Backup codes</td>
             <td class="">
+                <?php
+                    $filtered = $user->backupCodes->filter(function ($value, $key) {
+                        return $value->used_at == null;
+                    });
+                ?>
                 @if ($user->backupCodes->isEmpty() )
                 <span>Not setup yet </span>
                 <img src="{{ asset('/default-images/cancel_black_24dp.svg') }}" class="align-top" alt="">
                 @else
-                <span>Available {{ $user->backupCodes->count() }} backup code(s) left</span>
+                <span>Available {{ $filtered->count() }} backup code(s) left</span>
                 @endif
             </td>
             <td class="text-end"><img src="{{ asset('/default-images/chevron_right_black_24dp.svg') }}" alt="arrow" srcset=""></td>

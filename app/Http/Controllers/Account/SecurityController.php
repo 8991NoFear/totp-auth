@@ -123,7 +123,7 @@ class SecurityController extends Controller
         foreach ($backupCodes as $backupCode) {
             $line = chr(10);
             if ($this->checkBackupCode($backupCode)) {
-                $line .= $backupCode->code . chr(9) . $backupCode->expired_at;
+                $line .= $backupCode->code . ' ' . chr(9) . $backupCode->expired_at;
             }
             $responseText .= $line;
         }

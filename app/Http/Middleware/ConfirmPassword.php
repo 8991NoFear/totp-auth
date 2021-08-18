@@ -31,8 +31,6 @@ class ConfirmPassword
 
     public function setIntendedURL(Request $request) {
         $url = $request->url();
-        if ($url == route('account.security.setup-google2fa')) {
-            app('redirect')->setIntendedUrl($url);
-        }
+        app('redirect')->setIntendedUrl($url);
     }
 }

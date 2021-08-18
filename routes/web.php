@@ -91,7 +91,7 @@ Route::group([
     
         Route::get('view-backup-code', 'SecurityController@viewBackupCode')
             ->middleware('password.confirmed')
-            ->name('security.setup-backup-code');
+            ->name('security.view-backup-code');
         Route::get('download-backup-code', 'SecurityController@downloadBackupCodes')
             ->middleware('password.confirmed')
             ->name('security.download-backup-code');

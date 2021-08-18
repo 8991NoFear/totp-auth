@@ -59,22 +59,39 @@ class LoginController extends Controller
     public function login2fa(HttpRequest $request)
     {
         // Validate Request Data
-        $credentials = $request->only('totp_code');
+        $credentials = $request->only('code');
         $validator = Validator::make($credentials, [
-            'totp_code' => 'required|digits:6',
+            'code' => 'required|digits_between:6,8',
         ]);
         if ($validator->fails()) {
-            return back()->with('totp-error', 'TOTP code must be a number with 6 ditgits');
+            return back()->with('code-error', 'The code must be a number between 6 and 8 ditgits');
         }
-        $totpCode = $credentials['totp_code'];
+        $code = $credentials['code'];
 
-        // TOTP Check
         $userId = $request->session()->get('user.userId');
         $user = User::find($userId);
-        if ($this->google2fa->verify($totpCode, $user->secret_key)) {
+
+        // Google2FA Check || Backup Code Check
+        $verifyResult = $this->google2fa->verify($code, $user->secret_key) || $this->verifyBackupCode($user, $code);
+        if ($verifyResult) {
             $request->session()->put('user.loginedAdvance', true); // remember logined advance
             return redirect(route('account.dashboard.index'));
         }
-        return back()->with('totp-error', 'Wrong TOTP Code');
+
+        return back()->with('code-error', 'Wrong TOTP Code or wrong backup code');
+    }
+
+    public function verifyBackupCode(User $user, $bc) {
+        $backupCodes = $user->backupCodes->all();
+        foreach ($backupCodes as $backupCode) {
+            if ($bc == $backupCode->code) {
+                if (strtotime($backupCode->expired_at) >= time()) {
+                    $backupCode->used_at = date('Y-m-d H:i:s', time());
+                    $backupCode->save();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

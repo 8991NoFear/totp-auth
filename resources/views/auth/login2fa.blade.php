@@ -7,15 +7,16 @@
     <div class="container-fluid">
         <div class="row">
             <h2>LOGIN - TOTP</h2>
+            <p class="text-center">Open google authentication app in your phone and submit TOTP code. If your phone is present, you can use backup code instead!</p>
         </div>
         <div class="row">
             <form control="" class="form-group" action="{{ route('auth.login.login2fa') }}" method="post">
                 @CSRF
                 <div class="row">
-                    <input type="number" name="totp_code" id="username" class="form__input @if(session()->has('totp-error')) is-invalid @endif " placeholder="6 digits TOTP Code">
-                    @if(session()->has('totp-error'))
+                    <input type="number" name="code" id="username" class="form__input @if(session()->has('code-error')) is-invalid @endif " placeholder="TOTP Code or Backup Code">
+                    @if(session()->has('code-error'))
                     <div id="invalid">
-                        {{ session()->get('totp-error') }}
+                        {{ session()->get('code-error') }}
                     </div>
                     @endif
                 </div>
