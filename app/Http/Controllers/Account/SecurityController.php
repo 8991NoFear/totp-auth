@@ -56,15 +56,27 @@ class SecurityController extends Controller
 
         if ($request->session()->has('user.temp_secret_key')) {
             $secretKey = $request->session()->get('user.temp_secret_key');
+            $request->session()->forget('user.temp_secret_key'); // clear secret_key in session
             if ($this->google2fa->verify($totpCode, $secretKey)) {
                 // actually save data to db
                 $userId = $request->session()->get('user.userId');
                 $user = User::find($userId);
                 $user->secret_key = $secretKey;
                 $user->enabled_2fa_once = true;
-                $user->save();
 
-                $request->session()->forget('user.temp_secret_key'); // clear secret_key in session
+                $backupCodes = $this->doSetupBackupCode($user->id);
+                DB::beginTransaction();
+                try {
+                    $user->save();
+                    $user->backupCodes()->delete();
+                    foreach ($backupCodes as $backupCode) {
+                        $backupCode->save();
+                    }
+                    DB::commit();
+                } catch (\Throwable $e) {
+                    DB::rollBack();
+                    return abort(400);
+                }
 
                 // back with alert
                 return redirect(route('account.security.index')); // ->with('alert-class', 'alert-success');
@@ -80,13 +92,66 @@ class SecurityController extends Controller
         $userId = $request->session()->get('user.userId');
         $user = User::find($userId);
         $user->secret_key = null;
-        $user->save();
+
+        DB::beginTransaction();
+        try {
+            $user->backupCodes()->delete();
+            $user->save();
+            DB::commit();
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return abort(400);
+        }
+        
         return redirect(route('account.security.index'));
+    }
+
+    public function viewBackupCode(Request $request)
+    {
+        $userId = $request->session()->get('user.userId');
+        $user = User::find($userId);
+        $backupCodes = $user->backupCodes;
+        return view('account.view-backup-codes', compact('backupCodes'));
+    }
+
+    public function downloadBackupCodes(Request $request)
+    {
+        $userId = $request->session()->get('user.userId');
+        $user = User::find($userId);
+        $backupCodes = $user->backupCodes;
+        $responseText =  'TOTP-AUTH Backup Codes';
+        foreach ($backupCodes as $backupCode) {
+            $line = chr(10);
+            if ($this->checkBackupCode($backupCode)) {
+                $line .= $backupCode->code . chr(9) . $backupCode->expired_at;
+            }
+            $responseText .= $line;
+        }
+        
+        $headers = [
+            'Content-type'        => 'text/plain',
+            'Content-Disposition' => 'attachment; filename="totp-backup-codes.txt"',
+        ];
+        return \Response::make($responseText, 200, $headers);
+    }
+
+    private function checkBackupCode($backupCode)
+    {
+        if ($backupCode->used_at == null) {
+            if (strtotime($backupCode->expired_at) > time()) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private function doSetupGoogle2FA()
     {
-        $secretKey = $this->google2fa->generateSecretKey();
+        if (session()->has('user.temp_secret_key')) {
+            $secretKey = session('user.temp_secret_key');
+        } else {
+            $secretKey = $this->google2fa->generateSecretKey();
+        }
         $companyName = config('app.name', 'TOTP-AUTH');
         $companyEmail = config('app.email', 'totp-auth@totp-auth.com');
         $g2faUrl =  $this->google2fa->getQRCodeUrl($companyName, $companyEmail, $secretKey);
@@ -108,7 +173,7 @@ class SecurityController extends Controller
         $backupCodes = [];
         $quantity = config('security.backup_codes.quantity', 10);
         $length = config('security.backup_codes.length', 8);
-        $expiry = time() + config('security.backup_codes.timeout', 10800);
+        $expiry = time() + config('security.backup_codes.timeout', 31536000);
         for ($i = 0; $i < $quantity; $i++) {
             $bc = new BackupCode();
             $bc->user_id = $userId;

@@ -80,7 +80,7 @@
             </td>
             <td class="text-end"><img src="{{ asset('/default-images/chevron_right_black_24dp.svg') }}" alt="arrow" srcset=""></td>
         </tr>
-        <tr class="noselect" onclick="window.location='#';">
+        <tr class="noselect" onclick="window.location='{{ route('account.security.setup-backup-code') }}';">
             <td class="col-sm-6">Backup codes</td>
             <td class="">
                 @if ($user->backupCodes->isEmpty() )
