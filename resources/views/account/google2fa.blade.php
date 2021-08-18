@@ -17,22 +17,25 @@
 
     <div class="container-fluid m-0">
         <div class="row">
-            @if ($user->secret_key != null)
             <div class="col-sm-6 offset-sm-3 mt-3">
-            <div class="d-flex flex-row justify-content-between align-items-center border rounded-3 p-3">
-                <p class="p-0 m-0">Google2FA has turned on in 23 Feb, 2018</p>
-                <button type="button" class="btn btn-danger" data-bs-toggle="modal"
-                    data-bs-target="#exampleModal" id="toggleBtn" data="off">TURN OFF</button>
+                <div class="d-flex flex-row justify-content-between align-items-center border rounded-3 p-3">
+                @if ($user->secret_key != null)
+                    <p class="p-0 m-0">Google2FA has turned on in 23 Feb, 2018</p>
+                    <button type="button" class="btn btn-danger" data-bs-toggle="modal"
+                        data-bs-target="#exampleModal" id="toggleBtn" data="off">TURN OFF</button>
+                @else
+                    <p class="p-0 m-0">Turn on Google2FA to protect your account</p>
+                    <a href="#totp-code" class="btn btn-primary">TURN ON</a>
+                @endif
+                </div>
             </div>
-            </div>
-            @endif
             <form action="{{ route('account.security.verify-setup-google2fa') }}" method="post">
                 @CSRF
                 <img class="mb-2 mt-2" width="20%" src="data:image/png;base64, {{ $qrcode }}" alt="qr-code" />
                 <h2 class="mb-3 fw-normal">Almost Done!</h2>
                 <div class="col-sm-4 offset-sm-4">
-                    <p>Using Google2FA app to scan the QRCode, then submit generation TOTP code of that app</p>
-                    <input type="number" class="my-form-control text-center w-75  @if(session()->has('totp-err')) invalid @endif" id="floatingInput" placeholder="6 digits OTP code"
+                    <p>If you want to turn on Google2FA or just want to change secret key of Google2FA. Please using Google2FA app to scan the QRCode, then submit generation TOTP code of that app</p>
+                    <input type="number" id="totp-code" class="my-form-control text-center w-75  @if(session()->has('totp-err')) invalid @endif" id="floatingInput" placeholder="6 digits OTP code"
                         name="totp_code">
                     @if(session()->has('totp-err'))
                     <div style="color: red">
