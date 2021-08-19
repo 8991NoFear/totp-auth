@@ -34,9 +34,7 @@ class SecurityController extends Controller
     {
         $userId = $request->session()->get('user.userId');
         $user = User::with('backupCodes')
-            ->with(['securityActivities' => function ($query) {
-                $query->orderBy('created_at', 'DESC')->take(10);
-            }])
+            ->with('securityActivities')
             ->find($userId);
         return view('account.security', compact('user'));
     }

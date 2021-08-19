@@ -21,7 +21,10 @@
         </thead>
         <tbody>
         <?php
-            $activities = $user->securityActivities->all();
+            $activities = $user->securityActivities
+                ->sortByDESC('created_at')
+                ->take(9)
+                ->all();
         ?>
         @foreach ($activities as $activity)
         <tr class="noselect" onclick="window.location='#';">
@@ -37,7 +40,7 @@
         </tr>
         @endforeach
         <tr class="noselect" onclick="window.location='#';">
-            <td colspan="3" class="col-sm-6"><span class="text-primary">See all security activity ({{ count($activities) }})</span></td>
+            <td colspan="3" class="col-sm-6"><span class="text-primary">See all security activity ({{ $user->securityActivities->count() }})</span></td>
         </tr>
         </tbody>
     </table>
