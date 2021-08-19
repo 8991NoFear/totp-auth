@@ -26,7 +26,8 @@
             </form>
         </div>
         <div class="row">
-            <p>Don't have an account? <a href="#">Register Here</a></p>
+            <p>Don't have an account? <a href="{{ route('auth.register.index') }}">Register Here</a></p>
+            <p>Or want to change account? <a href="{{ route('auth.login.index') }}">Go back login</a></p>
         </div>
     </div>
 </div>

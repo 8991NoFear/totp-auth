@@ -15,6 +15,7 @@ class User extends Model
         'password',
         'enabled_2fa_once',
         'secret_key',
+        'remember_token',
     ];
 
     public function resetPassword() {
