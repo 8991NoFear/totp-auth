@@ -19,6 +19,8 @@ use PragmaRX\Google2FA\Support\Constants as SupportConstants;
 use PragmaRX\Google2FA\Google2FA;
 use Illuminate\Support\Facades\App;
 
+use App\Helpers\SecurityActivityLogger;
+
 class SecurityController extends Controller
 {
     public $google2fa;
@@ -31,7 +33,11 @@ class SecurityController extends Controller
     public function index(Request $request)
     {
         $userId = $request->session()->get('user.userId');
-        $user = User::with('backupCodes')->find($userId);
+        $user = User::with('backupCodes')
+            ->with(['securityActivities' => function ($query) {
+                $query->orderBy('created_at', 'DESC')->take(10);
+            }])
+            ->find($userId);
         return view('account.security', compact('user'));
     }
 
@@ -64,7 +70,7 @@ class SecurityController extends Controller
                 $user = User::find($userId);
 
                 $logger = App::make(SecurityActivityLogger::class);
-                if (isnull($user->secret_key)) {
+                if ($user->secret_key == null) {
                     $description = config('security.strings.enable-google2fa');
                 } else {
                     $description = config('security.strings.re-enable-google2fa');
@@ -90,6 +96,7 @@ class SecurityController extends Controller
                     return abort(400);
                 }
 
+                $request->session()->put('user.loginedAdvance', true); // remember logined advance
                 // back with alert
                 return redirect(route('account.security.index')); // ->with('alert-class', 'alert-success');
             } else {
@@ -120,6 +127,7 @@ class SecurityController extends Controller
             return abort(400);
         }
         
+        $request->session()->forget('user.loginedAdvance');
         return redirect(route('account.security.index'));
     }
 
