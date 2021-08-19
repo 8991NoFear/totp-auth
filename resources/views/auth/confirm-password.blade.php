@@ -7,6 +7,7 @@
     <div class="container-fluid">
         <div class="row">
             <h2>CONFIRM YOUR PASSWORD</h2>
+            <p class="text-center">Please re-enter your password to do this action!</p>
         </div>
         <div class="row">
             <form control="" class="form-group" action="{{ route('auth.confirm-password') }}" method="post">

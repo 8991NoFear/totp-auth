@@ -19,7 +19,7 @@
                 <p>Our website support Google Two Factor Authentication (Google 2FA), would you like to enable it now? Google 2FA will improve your account security but not require.</p>
                 <div class="w-100 flex-row justify-content-around">
                     <a href="{{ route('auth.login.index') }}" class="btn btn-outline-secondary">NO, maybe later</a>
-                    <a href="{{ route('account.security.setup2fa') }}" class="btn btn-primary">YES, setup it now</a>
+                    <a href="{{ route('account.security.setup-google2fa') }}" class="btn btn-primary">YES, setup it now</a>
                 </div>
             </div>
         </div>

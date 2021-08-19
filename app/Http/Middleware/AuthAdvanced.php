@@ -17,6 +17,15 @@ class AuthAdvanced
      */
     public function handle(Request $request, Closure $next)
     {
+        $rememberToken = $request->cookie('remember_token');
+        if ($rememberToken != null) {
+            $user = User::where('remember_token', $rememberToken)->first();
+            if ($user != null) {
+                $request->session()->put('user.userId', $user->id);
+                $request->session()->put('user.loginedNormal', true);
+            }
+        }
+
         if ($request->session()->has('user.userId')) {
             $userId = $request->session()->get('user.userId');
             $user = User::find($userId);

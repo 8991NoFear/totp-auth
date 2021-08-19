@@ -17,6 +17,9 @@ use Illuminate\Http\Request;
 
 use PragmaRX\Google2FA\Support\Constants as SupportConstants;
 use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\App;
+
+use App\Helpers\SecurityActivityLogger;
 
 class SecurityController extends Controller
 {
@@ -30,7 +33,9 @@ class SecurityController extends Controller
     public function index(Request $request)
     {
         $userId = $request->session()->get('user.userId');
-        $user = User::with('backupCodes')->find($userId);
+        $user = User::with('backupCodes')
+            ->with('securityActivities')
+            ->find($userId);
         return view('account.security', compact('user'));
     }
 
@@ -61,10 +66,20 @@ class SecurityController extends Controller
                 // actually save data to db
                 $userId = $request->session()->get('user.userId');
                 $user = User::find($userId);
+
+                $logger = App::make(SecurityActivityLogger::class);
+                if ($user->secret_key == null) {
+                    $description = config('security.strings.enable-google2fa');
+                } else {
+                    $description = config('security.strings.re-enable-google2fa');
+                }
+                $securityActivity = $logger->getModelForSave($request, $userId, $description);
+
                 $user->secret_key = $secretKey;
                 $user->enabled_2fa_once = true;
 
                 $backupCodes = $this->doSetupBackupCode($user->id);
+
                 DB::beginTransaction();
                 try {
                     $user->save();
@@ -72,12 +87,14 @@ class SecurityController extends Controller
                     foreach ($backupCodes as $backupCode) {
                         $backupCode->save();
                     }
+                    $securityActivity->save();
                     DB::commit();
                 } catch (\Throwable $e) {
                     DB::rollBack();
                     return abort(400);
                 }
 
+                $request->session()->put('user.loginedAdvance', true); // remember logined advance
                 // back with alert
                 return redirect(route('account.security.index')); // ->with('alert-class', 'alert-success');
             } else {
@@ -93,16 +110,22 @@ class SecurityController extends Controller
         $user = User::find($userId);
         $user->secret_key = null;
 
+        $logger = App::make(SecurityActivityLogger::class);
+        $description = config('security.strings.disable-google2fa');
+        $securityActivity = $logger->getModelForSave($request, $userId, $description);
+
         DB::beginTransaction();
         try {
             $user->backupCodes()->delete();
             $user->save();
+            $securityActivity->save();
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
             return abort(400);
         }
         
+        $request->session()->forget('user.loginedAdvance');
         return redirect(route('account.security.index'));
     }
 
@@ -123,7 +146,7 @@ class SecurityController extends Controller
         foreach ($backupCodes as $backupCode) {
             $line = chr(10);
             if ($this->checkBackupCode($backupCode)) {
-                $line .= $backupCode->code . chr(9) . $backupCode->expired_at;
+                $line .= $backupCode->code . ' ' . chr(9) . $backupCode->expired_at;
             }
             $responseText .= $line;
         }

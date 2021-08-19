@@ -6,11 +6,15 @@ use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
 use App\Models\User;
 use App\Models\PasswordReset;
+use App\Models\SecurityActivity;
 use App\Mail\Registered;
 
+use App\Helpers\SecurityActivityLogger;
+
+use Illuminate\Support\Facades\App;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Mail;
-use Illuminate\Support\Facades\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
@@ -71,31 +75,7 @@ class RegisterController extends Controller
 
     public function verify(Request $request, $id, $token)
     {
-        $this->validateVerificationRequest($id, $token); // validate request URI
-        
-        $user = $this->findUserByIdOrFail($id);
-        $resetPassword = $user->resetPassword;
-
-        $isValid = strtotime($resetPassword->expired_at) >= time();
-        $isValid = $isValid && ($token == $resetPassword->token);
-        if ($isValid) {
-            $user->email_verified_at = date('Y-m-d H:i:s');
-            $resetPassword->expired_at = date('Y-m-d H:i:s');
-            DB::beginTransaction();
-            try {
-                $user->save();
-                $resetPassword->save();
-                DB::commit();
-            } catch (\Throwable $e) {
-                DB::rollBack();
-                return abort(500); // not handle
-            }
-            return view('account.verify-complete');
-        }
-        return abort(400); // not handle
-    }
-
-    private function validateVerificationRequest($id, $token) {
+        // validate request URI
         $validator = Validator::make([
             'id' => $id,
             'token' => $token
@@ -106,6 +86,32 @@ class RegisterController extends Controller
         if ($validator->fails()) {
             return abort(400);
         }
+        
+        $user = $this->findUserByIdOrFail($id);
+        $resetPassword = $user->resetPassword;
+
+        $logger = App::make(SecurityActivityLogger::class);
+        $description = config('security.strings.verify-email');
+        $securityActivity = $logger->getModelForSave($request, $id, $description);
+
+        $isValid = strtotime($resetPassword->expired_at) >= time();
+        $isValid = $isValid && ($token == $resetPassword->token);
+        if ($isValid) {
+            $user->email_verified_at = date('Y-m-d H:i:s');
+            $resetPassword->expired_at = date('Y-m-d H:i:s');
+            DB::beginTransaction();
+            try {
+                $user->save();
+                $resetPassword->save();
+                $securityActivity->save();
+                DB::commit();
+            } catch (\Throwable $e) {
+                DB::rollBack();
+                return abort(500); // not handle
+            }
+            return view('account.verify-complete');
+        }
+        return abort(400); // not handle
     }
 
     private function findUserByIdOrFail($id) {

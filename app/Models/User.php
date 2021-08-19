@@ -15,6 +15,7 @@ class User extends Model
         'password',
         'enabled_2fa_once',
         'secret_key',
+        'remember_token',
     ];
 
     public function resetPassword() {
@@ -24,5 +25,9 @@ class User extends Model
     public function backupCodes()
     {
         return $this->hasMany(BackupCode::class, 'user_id', 'id');
+    }
+
+    public function securityActivities() {
+        return $this->hasMany(SecurityActivity::class, 'user_id', 'id');
     }
 }
