@@ -25,4 +25,8 @@ class User extends Model
     {
         return $this->hasMany(BackupCode::class, 'user_id', 'id');
     }
+
+    public function securityActivities() {
+        return $this->hasMany(SecurityActivity::class, 'user_id', 'id');
+    }
 }

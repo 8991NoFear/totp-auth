@@ -12,6 +12,9 @@ use Illuminate\Support\Facades\Validator;
 
 use PragmaRX\Google2FA\Support\Constants as SupportConstants;
 use PragmaRX\Google2FA\Google2FA;
+use Illuminate\Support\Facades\App;
+
+use App\Helpers\SecurityActivityLogger;
 
 class LoginController extends Controller
 {
@@ -39,6 +42,12 @@ class LoginController extends Controller
         $user = User::where('email', $credentials['email'])->first();
         if ($user != null) {
             if (Hash::check($credentials['password'],  $user->password)) { // Email&Password Login
+                if ($user->email_verified_at == null) {
+                    return back()
+                        ->withInput(['email' => $credentials['email']])
+                        ->withErrors(['email' => 'email has not verified yet']);
+                }
+                
                 $request->session()->put('user.userId', $user->id); // Save user id into session
                 $request->session()->put('user.loginedNormal', true); // remember logined normal
                 $request->session()->regenerate(); // Regenerate session id
@@ -47,7 +56,11 @@ class LoginController extends Controller
                     redirect(route('auth.login.index2fa'));
                 }
                 
-                // else
+                // log
+                $logger = App::make(SecurityActivityLogger::class);
+                $description = config('security.strings.login');
+                $securityActivity = $logger->getModelForSave($request, $user->id, $description);
+                $securityActivity->save();
                 return redirect(route('account.dashboard.index'));
             }
         }
