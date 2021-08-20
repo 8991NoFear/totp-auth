@@ -65,6 +65,20 @@ Route::group([
 });
 
 /**
+ * CHANGE PASSWORD ROUTE
+ */
+
+Route::group([
+    'as' => 'auth.',
+    'namespace' => 'App\Http\Controllers\Auth',
+    'prefix' => 'change-password',
+    'middleware' => 'auth.advanced'
+], function () {
+    Route::get('/', 'ChangePasswordController@index')->name('change-password.index');
+    Route::post('/', 'ChangePasswordController@update')->name('change-password.update');
+});
+
+/**
  * ACCOUNT ROUTE
  */
 Route::group([

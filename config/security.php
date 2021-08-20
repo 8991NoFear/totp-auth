@@ -15,6 +15,7 @@ return [
         'enable-google2fa' => "You enabled Google2FA",
         'disable-google2fa' => "You disabled Google2FA",
         're-enable-google2fa' => "You re-enabled Google2FA",
+        'change-password' => "You changed password",
     ],
     'auth' => [
         'remember_timeout' => 129600, // 3 months
