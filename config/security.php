@@ -19,5 +19,8 @@ return [
     ],
     'auth' => [
         'remember_timeout' => 129600, // 3 months
+    ],
+    'token' => [
+        'length' => 32,
     ]
 ];

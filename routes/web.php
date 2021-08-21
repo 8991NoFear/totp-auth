@@ -41,7 +41,7 @@ Route::group([
 ], function () {
     Route::get('/', 'RegisterController@index')->name('index');
     Route::post('/', 'RegisterController@register')->name('register');
-    Route::get('/verify/{id}/{token}', 'RegisterController@verify')->name('verify');
+    Route::get('/verify/{user}/{token}', 'RegisterController@verify')->name('verify');
 });
 
 /**

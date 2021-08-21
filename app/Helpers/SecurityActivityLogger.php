@@ -6,25 +6,22 @@ use App\Models\SecurityActivity;
 use Illuminate\Http\Request;
 
 class SecurityActivityLogger {
-    public function getModelForSave(Request $request, $id, $description)
+    public function log(Request $request, $userId, $type)
     {
-        $model = new SecurityActivity();
+        $action = config("security.strings.{$type}", $type);
+        $device = $this->getDevice($request->userAgent());
+        $location = $this->getLocation($request->ip());
 
-        $model->user_id = $id;
-        $model->action = $description;
-
-        $user_agent = $request->userAgent();
-        $model->device = $this->getDevice($user_agent);
-
-        $ip = $request->ip();
-        $model->location = $this->getLocation($ip);
-
-        $model->created_at = date('Y-m-d H:i:s', time());
-
-        return $model;
+        SecurityActivity::create([
+            'user_id' => $userId,
+            'action' => $action,
+            'device' => $device,
+            'location' => $location,
+        ]);
     }
 
-    private function getLocation($ip) {
+    private function getLocation($ip)
+    {
         $details = json_decode(file_get_contents("http://ipinfo.io/{$ip}/json"));
         $location = '';
         try {
@@ -39,7 +36,8 @@ class SecurityActivityLogger {
         return $location;
     }
 
-    private function getDevice($user_agent) {
+    private function getDevice($user_agent)
+    {
         $os = $this->getOS($user_agent);
         $browser = $this->getBrowser($user_agent);
 
@@ -57,7 +55,8 @@ class SecurityActivityLogger {
         return $device;
     }
 
-    private function getOS($user_agent) { 
+    private function getOS($user_agent)
+    { 
         $os_platform = "Unknown OS Platform";
 
         $os_array = array(
@@ -95,7 +94,8 @@ class SecurityActivityLogger {
         return $os_platform;
     }
 
-    private function getBrowser($user_agent) {
+    private function getBrowser($user_agent)
+    {
         $browser = "Unknown Browser";
 
         $browser_array = array(

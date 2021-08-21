@@ -12,4 +12,11 @@ class SecurityActivity extends Model
     protected $table = 'security_activities';
 
     public $timestamps = false;
+
+    protected $fillable = [
+        'user_id',
+        'action',
+        'device',
+        'location',
+    ];
 }

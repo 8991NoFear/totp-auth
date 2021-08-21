@@ -63,8 +63,14 @@
                     })
                     ->sortByDESC('created_at')
                     ->first();
-                $lcpDt = date("F j, Y, g:i a",strtotime($lcp->created_at));
-                $lcpDt .= ' - ' . $lcp->location;
+
+                if ($lcp != null) {
+                    $lcpDt = date("F j, Y, g:i a",strtotime($lcp->created_at));
+                    $lcpDt .= ' - ' . $lcp->location;
+                } else {
+                    $lcpDt = date("F j, Y, g:i a",strtotime($user->created_at));
+                }
+                
             ?>
             <td>Last changed at {{ $lcpDt }}</td>
             <td class="text-end"><img src="{{ asset('/default-images/chevron_right_black_24dp.svg') }}" alt="arrow" srcset=""></td>
