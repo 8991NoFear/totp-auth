@@ -2,9 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\AuthenticationService;
 use App\Models\User;
 use Closure;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\App;
 
 class AuthAdvanced
 {
@@ -17,26 +19,30 @@ class AuthAdvanced
      */
     public function handle(Request $request, Closure $next)
     {
+        $authenticationService = App::make(AuthenticationService::class);
+
         $rememberToken = $request->cookie('remember_token');
         if ($rememberToken != null) {
-            $user = User::where('remember_token', $rememberToken)->first();
-            if ($user != null) {
-                $request->session()->put('user.userId', $user->id);
-                $request->session()->put('user.loginedNormal', true);
-            }
+            $authenticationService->attemptRemember($rememberToken);
         }
 
-        if ($request->session()->has('user.userId')) {
-            $userId = $request->session()->get('user.userId');
-            $user = User::find($userId);
-            if ($user->secret_key != null) {
-                if ($request->session()->has('user.loginedAdvance')) {
+        $levelLogin = $authenticationService->levelLogin();
+        switch ($levelLogin) {
+            case AuthenticationService::LEVEL_LOGIN_NORMAL:
+                $user = $authenticationService->userOrFail();
+                if ($user->secret_key != null) {
+                    return redirect(route('auth.login.index2fa'));
+                } else {
                     return $next($request);
                 }
-                return redirect(route('auth.login.index2fa'));
-            }
-            return $next($request);
+                break;
+
+            case AuthenticationService::LEVEL_LOGIN_ADVANCED:
+                return $next($request);
+                break;
+
+            default:
+                return redirect(route('auth.login.index'));
         }
-        return redirect(route('auth.login.index'));
     }
 }
