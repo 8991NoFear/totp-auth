@@ -9,9 +9,11 @@ class PasswordReset extends Model
 {
     use HasFactory;
 
+    public $table = 'password_resets';
+
     public $timestamps = false;
 
     public $primaryKey = 'email';
 
-    public $guarded = ['email'];
+    public $guarded = [];
 }
