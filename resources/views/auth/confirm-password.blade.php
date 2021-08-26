@@ -13,12 +13,12 @@
             <form control="" class="form-group" action="{{ route('auth.confirm-password') }}" method="post">
                 @CSRF
                 <div class="row">
-                    <input type="password" name="password" id="username" class="form__input @if(session()->has('password-error')) is-invalid @endif " placeholder="Password">
-                    @if(session()->has('password-error'))
+                    <input type="password" name="password" id="username" class="form__input @error('password') is-invalid @enderror " placeholder="Password">
+                    @error('password')
                     <div id="invalid">
-                        {{ session()->get('password-error') }}
+                        {{ $message }}
                     </div>
-                    @endif
+                    @enderror
                 </div>
                 <div class="row">
                     <input type="submit" value="Submit" class="btn">

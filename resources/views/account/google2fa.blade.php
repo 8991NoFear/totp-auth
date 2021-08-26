@@ -17,7 +17,7 @@
                 @endif
             </div>
         </div>
-        <form action="{{ route('account.security.verify-setup-google2fa') }}" method="post">
+        <form action="{{ route('account.security.setup-g2fa') }}" method="post">
             @CSRF
             <img class="mb-2 mt-2" width="20%" src="data:image/png;base64, {{ $qrcode }}" alt="qr-code" />
             <h2 class="mb-3 fw-normal">Almost Done!</h2>
@@ -58,7 +58,7 @@
                 Are you sure?
             </div>
             <div class="modal-footer">
-                <form action="{{ route('account.security.turn-off-google2fa') }}" method="post">
+                <form action="{{ route('account.security.turn-off-g2fa') }}" method="post">
                     @CSRF
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No, I don't</button>
                     <button type="submit" class="btn btn-primary" id="submitBtn">Yes, I do</button>
