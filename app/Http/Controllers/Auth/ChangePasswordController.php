@@ -2,17 +2,25 @@
 
 namespace App\Http\Controllers\Auth;
 
-use Illuminate\Http\Request;
+use App\Helpers\AuthenticationService;
+use App\Helpers\SecurityService;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ChangePasswordRequest;
 use Illuminate\Support\Facades\Hash;
-use App\Helpers\SecurityActivityLogger;
 use Illuminate\Support\Facades\App;
-use App\Models\User;
 use Illuminate\Support\Facades\Cookie;
 
 class ChangePasswordController extends Controller
 {
+    public $authenticationService;
+    public $securityService;
+
+    public function __construct()
+    {
+        $this->authenticationService = App::make(AuthenticationService::class);
+        $this->securityService = App::make(SecurityService::class);
+    }
+
     public function index()
     {
         return view('auth.change-password');
@@ -21,11 +29,9 @@ class ChangePasswordController extends Controller
     public function update(ChangePasswordRequest $request)
     {
         $credentials = $request->only(['old_password', 'password', 'password_confirmation']);
-        $userId = $request->session()->get('user.userId');
-        $user = User::find($userId);
-
+        $user = $this->authenticationService->userOrNull();
         if (Hash::check($credentials['old_password'],  $user->password)) {
-            // clear cookie
+            // clear remember cookie
             Cookie::expire('remember_token');
             
             // update
@@ -33,12 +39,8 @@ class ChangePasswordController extends Controller
                 'password' => Hash::make($credentials['password']),
                 'remember_token' => null,
             ]);
-
-            // log
-            $logger = App::make(SecurityActivityLogger::class);
-            $description = config('security.strings.change-password');
-            $securityActivity = $logger->getModelForSave($request, $userId, $description);
-            $securityActivity->save();
+            
+            $this->securityService->log($request, $user->id, 'change-password'); // log
 
             return redirect(route('account.security.index'));
         }

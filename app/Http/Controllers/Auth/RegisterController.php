@@ -7,8 +7,7 @@ use App\Http\Requests\RegisterRequest;
 use App\Notifications\RegisteredNotification;
 use App\Models\User;
 use App\Models\PasswordReset;
-use App\Helpers\SecurityActivityLogger;
-
+use App\Helpers\SecurityService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
@@ -66,7 +65,7 @@ class RegisterController extends Controller
                 $user->passwordReset()->update([
                     'expired_at' => date('Y-m-d H:i:s'),
                 ]);
-                App::make(SecurityActivityLogger::class)
+                App::make(SecurityService::class)
                     ->log($request, $user->id, 'verify-email');
                 DB::commit();
             } catch (\Throwable $e) {
