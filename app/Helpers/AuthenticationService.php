@@ -2,6 +2,7 @@
 
 namespace App\Helpers;
 
+use App\Models\PasswordReset;
 use App\Models\User;
 use Illuminate\Support\Facades\Cookie;
 use Illuminate\Support\Facades\Hash;
@@ -181,6 +182,41 @@ class AuthenticationService {
             if ($now <= ($passwordConfirmedAt + $timeout)) {
                 return true;
             }
+        }
+        return false;
+    }
+
+    /**
+     * @param string
+     */
+    public function forgotPassword($email)
+    {
+        $passwordReset = PasswordReset::where('email', $email)->first();
+        if ($passwordReset != null) {
+            $token = bin2hex(openssl_random_pseudo_bytes(config('security.token.length', 32)));
+            $expired_at = date("Y-m-d H:i:s", time() + config('security.password_reset.token_timeout', 10800));
+            $passwordReset->update([
+                'token' => $token,
+                'expired_at' => $expired_at,
+            ]);
+            return $passwordReset;
+        }
+        return false;
+    }
+
+    public function verifyForgotPassword($user, $token)
+    {
+        $passwordReset = $user->passwordReset;
+        if ($passwordReset == null) {
+            abort(500);
+        }
+        $isValidTime = strtotime($passwordReset->expired_at) >= time();
+        $isValidToken = ($token == $passwordReset->token);
+        if ($isValidTime && $isValidToken) {
+            $passwordReset->update([
+                'expired_at' => date('Y:m:d H:i:s', time()),
+            ]);
+            return true;
         }
         return false;
     }

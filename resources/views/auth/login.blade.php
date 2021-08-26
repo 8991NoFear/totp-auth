@@ -38,6 +38,7 @@
 		</div>
 		<div class="row">
 			<p>Don't have an account? <a href="{{ route('auth.register.index') }}">Register Here</a></p>
+			<p>Forgot your password? <a href="{{ route('auth.forgot-password.index') }}">Reset Password Here</a></p>
 		</div>
 	</div>
 </div>

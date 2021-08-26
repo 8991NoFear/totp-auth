@@ -65,6 +65,21 @@ Route::group([
 });
 
 /**
+ * FORGOT PASSWORD ROUTE
+ */
+
+Route::group([
+    'as' => 'auth.',
+    'namespace' => 'App\Http\Controllers\Auth',
+    'prefix' => 'forgot-password',
+], function () {
+    Route::get('/', 'ForgotPasswordController@index')->name('forgot-password.index');
+    Route::post('/', 'ForgotPasswordController@forgotPassword')->name('forgot-password.request-change-password');
+    Route::get('/verify-forgot-password/{user}/{token}', 'ForgotPasswordController@verifyForgotPassword')->name('forgot-password.verify-change-password');
+    Route::post('/verify-forgot-password/{user}/{token}', 'ForgotPasswordController@changePassword')->name('forgot-password.change-password');
+});
+
+/**
  * CHANGE PASSWORD ROUTE
  */
 
