@@ -12,9 +12,9 @@ return [
         'logout' => "You logged out",
         'login' => "You logged in",
         'verify-email' => "You verified email",
-        'enable-google2fa' => "You enabled Google2FA",
-        'disable-google2fa' => "You disabled Google2FA",
-        're-enable-google2fa' => "You re-enabled Google2FA",
+        'enable-g2fa' => "You enabled Google2FA",
+        'disable-g2fa' => "You disabled Google2FA",
+        're-enable-g2fa' => "You re-enabled Google2FA",
         'change-password' => "You changed password",
     ],
     'auth' => [
@@ -22,5 +22,12 @@ return [
     ],
     'token' => [
         'length' => 32,
+    ],
+    'confirm_password' => [
+        'timeout' => 10800,
+    ],
+    'remember_token' => [
+        'length' => 32,
+        'timeout' => 324000, // 3 months
     ]
 ];

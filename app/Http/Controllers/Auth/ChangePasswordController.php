@@ -26,7 +26,7 @@ class ChangePasswordController extends Controller
         return view('auth.change-password');
     }
 
-    public function update(ChangePasswordRequest $request)
+    public function changePassword(ChangePasswordRequest $request)
     {
         $credentials = $request->only(['old_password', 'password', 'password_confirmation']);
         $user = $this->authenticationService->userOrNull();
