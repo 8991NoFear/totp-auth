@@ -11,7 +11,7 @@ class PasswordReset extends Model
 
     public $timestamps = false;
 
-    protected $primaryKey = 'email';
-    
-    protected $guarded = [];
+    public $primaryKey = 'email';
+
+    public $guarded = ['email'];
 }

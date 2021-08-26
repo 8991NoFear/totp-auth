@@ -11,7 +11,7 @@ class User extends Model
     use HasFactory;
     use Notifiable;
 
-    protected $guarded = [];
+    public $guarded = ['id'];
 
     public function passwordReset() {
         return $this->hasOne(PasswordReset::class, 'email', 'email');
