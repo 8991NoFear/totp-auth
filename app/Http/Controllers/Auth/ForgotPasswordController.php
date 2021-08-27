@@ -54,9 +54,7 @@ class ForgotPasswordController extends Controller
     public function changePassword(ResetPasswordRequest $request, User $user, $token)
     {
         $newPassword = $request->input('password');
-        $user->update([
-            'password' => Hash::make($newPassword),
-        ]);
+        $this->authenticationService->changePassword($user, $token);
         $this->securityService->log($request, $user->id, 'change-password');
         return view('auth.reset-password-complete');
     }

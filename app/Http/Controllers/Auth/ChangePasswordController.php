@@ -46,6 +46,6 @@ class ChangePasswordController extends Controller
         }
 
         return back()
-            ->withErrors(['old-password' => 'current password is wrong']);
+            ->withErrors(['old_password' => 'current password is wrong']);
     }
 }

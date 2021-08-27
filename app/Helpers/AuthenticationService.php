@@ -213,11 +213,19 @@ class AuthenticationService {
         $isValidTime = strtotime($passwordReset->expired_at) >= time();
         $isValidToken = ($token == $passwordReset->token);
         if ($isValidTime && $isValidToken) {
-            $passwordReset->update([
-                'expired_at' => date('Y:m:d H:i:s', time()),
-            ]);
             return true;
         }
         return false;
+    }
+
+    public function changePassword(User $user, $newPassword)
+    {
+        $user->update([
+            'password' => Hash::make($newPassword),
+        ]);
+        $user->passwordReset->update([
+            'expired_at' => date('Y:m:d H:i:s', time()),
+        ]);
+        $this->logout($user);
     }
 }

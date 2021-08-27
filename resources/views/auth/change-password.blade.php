@@ -12,8 +12,8 @@
 			<form control="" class="form-group" action="{{ route('auth.change-password.update') }}" method="post">
 				@CSRF
 				<div class="row">
-					<input type="number" name="old_password" id="username" class="form__input @error('old-password') is-invalid @enderror " placeholder="Current password">
-					@error('old-password')
+					<input type="number" name="old_password" id="username" class="form__input @error('old_password') is-invalid @enderror " placeholder="Current password" value="{{ old('old_password', '') }}">
+					@error('old_password')
 					<div id="invalid">
 						{{ $message }}
 					</div>

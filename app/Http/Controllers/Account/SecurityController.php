@@ -61,7 +61,7 @@ class SecurityController extends Controller
                 ->with('alert-class', 'alert-success')
                 ->with('alert-message', 'Setup G2FA Successfully');
         }
-        return back()->with('totp-err', 'Wrong TOTP Code');
+        return back()->withErrors(['totp_code' => 'Wrong TOTP Code']);
     }
 
     public function turnOffG2FA(Request $request)
