@@ -11,6 +11,8 @@
         <p>Settings and recommendations to help you keep your account more securely</p>
     </div>
 
+    @include('account.inc._alert')
+
     <table class="table table-hover border rounded rounded-3 mt-5 align-middle">
         <thead>
         <tr>
@@ -54,12 +56,27 @@
         </tr>
         </thead>
         <tbody>
-        <tr class="noselect" onclick="window.location='#';">
+        <tr class="noselect" onclick="window.location='{{ route('auth.change-password.index') }}';">
             <td class="col-sm-6">Change password</td>
-            <td>Last changed password at 26 Thg 7 - Hanoi, Vietnam</td>
+            @php
+            $lcp = $user->securityActivities
+                ->filter(function ($value, $key) {
+                    return $value->action == config('security.strings.change-password');
+                })
+                ->sortByDESC('created_at')
+                ->first();
+
+            if ($lcp != null) {
+                $lcpDt = date("F j, Y, g:i a",strtotime($lcp->created_at));
+                $lcpDt .= ' - ' . $lcp->location;
+            } else {
+                $lcpDt = date("F j, Y, g:i a",strtotime($user->created_at));
+            }   
+            @endphp
+            <td>Last changed at {{ $lcpDt }}</td>
             <td class="text-end"><img src="{{ asset('/default-images/chevron_right_black_24dp.svg') }}" alt="arrow" srcset=""></td>
         </tr>
-        <tr class="noselect" onclick="window.location='{{ route('account.security.setup-google2fa') }}';">
+        <tr class="noselect" onclick="window.location='{{ route('account.security.temporary-setup-g2fa') }}';">
             <td class="col-sm-6">Google two factor authentiaction (G2FA)</td>
             <td class="">
                 @if ($user->secret_key != null)

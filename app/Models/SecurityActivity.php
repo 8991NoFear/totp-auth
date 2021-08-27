@@ -9,7 +9,9 @@ class SecurityActivity extends Model
 {
     use HasFactory;
 
-    protected $table = 'security_activities';
+    public $table = 'security_activities';
 
     public $timestamps = false;
+
+    public $guarded = ['id'];
 }

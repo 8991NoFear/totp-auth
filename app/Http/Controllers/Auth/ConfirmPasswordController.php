@@ -2,40 +2,34 @@
 
 namespace App\Http\Controllers\Auth;
 
+use App\Helpers\AuthenticationService;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use App\Models\User;
-use Illuminate\Support\Facades\Validator;
+use App\Http\Requests\ConfirmPasswordRequest;
+
+use Illuminate\Support\Facades\App;
 
 class ConfirmPasswordController extends Controller
 {
+    public $authenticationService;
+
+    public function __construct()
+    {
+        $this->authenticationService = App::make(AuthenticationService::class);
+    }
+
     public function index()
     {
         return view('auth.confirm-password');
     }
 
-    public function confirm (Request $request)
+    public function confirm(ConfirmPasswordRequest $request)
     {
-        // Validate Request Data
-        $credentials = $request->only('password');
-        $validator = Validator::make($credentials, [
-            'password' => 'required',
-        ]);
-        if ($validator->fails()) {
-            return back()->with('password-error', 'Password is required');
-        }
-        $password = $credentials['password'];
+        $password = $request->input('password');
         
-        $userId = $request->session()->get('user.userId');
-        $user = User::find($userId);
-        if (Hash::check($credentials['password'], $user->password)) {
-            $now = date("Y-m-d H:i:s", time());
-            $request->session()->put('user.password_confirmed_at', $now);
+        $user = $this->authenticationService->userOrFail();
+        if ($this->authenticationService->confirmPassword($user, $password)) {
             return redirect()->intended(route('account.security.index'));
         }
-
-        // TODO: else
-        return back()->with('password-error', 'Wrong password');
+        return back()->withErrors(['password' => 'Wrong password']);
     }
 }

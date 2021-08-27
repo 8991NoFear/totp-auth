@@ -14,7 +14,7 @@ use Illuminate\Support\Facades\Route;
 */
 
 Route::get('/', function () {
-    return view('welcome');
+    return redirect(route('account.dashboard.index'));
 });
 
 /**
@@ -41,7 +41,7 @@ Route::group([
 ], function () {
     Route::get('/', 'RegisterController@index')->name('index');
     Route::post('/', 'RegisterController@register')->name('register');
-    Route::get('/verify/{id}/{token}', 'RegisterController@verify')->name('verify');
+    Route::get('/verify/{user}/{token}', 'RegisterController@verify')->name('verify');
 });
 
 /**
@@ -65,6 +65,35 @@ Route::group([
 });
 
 /**
+ * FORGOT PASSWORD ROUTE
+ */
+
+Route::group([
+    'as' => 'auth.',
+    'namespace' => 'App\Http\Controllers\Auth',
+    'prefix' => 'forgot-password',
+], function () {
+    Route::get('/', 'ForgotPasswordController@index')->name('forgot-password.index');
+    Route::post('/', 'ForgotPasswordController@forgotPassword')->name('forgot-password.request-change-password');
+    Route::get('/verify-forgot-password/{user}/{token}', 'ForgotPasswordController@verifyForgotPassword')->name('forgot-password.verify-change-password');
+    Route::post('/verify-forgot-password/{user}/{token}', 'ForgotPasswordController@changePassword')->name('forgot-password.change-password');
+});
+
+/**
+ * CHANGE PASSWORD ROUTE
+ */
+
+Route::group([
+    'as' => 'auth.',
+    'namespace' => 'App\Http\Controllers\Auth',
+    'prefix' => 'change-password',
+    'middleware' => 'auth.advanced'
+], function () {
+    Route::get('/', 'ChangePasswordController@index')->name('change-password.index');
+    Route::post('/', 'ChangePasswordController@changePassword')->name('change-password.update');
+});
+
+/**
  * ACCOUNT ROUTE
  */
 Route::group([
@@ -79,15 +108,15 @@ Route::group([
     Route::group([
         'middleware' => 'password.confirmed',
     ], function () {
-        Route::get('setup-google2fa', 'SecurityController@setupGoogle2FA')
+        Route::get('setup-g2fa', 'SecurityController@temporarySetupG2FA')
             ->middleware('password.confirmed')
-            ->name('security.setup-google2fa');
-        Route::post('setup-google2fa', 'SecurityController@verifySetupGoogle2FA')
+            ->name('security.temporary-setup-g2fa');
+        Route::post('setup-g2fa', 'SecurityController@setupG2FA')
             ->middleware('password.confirmed')
-            ->name('security.verify-setup-google2fa');
-        Route::post('turn-off-google2fa', 'SecurityController@turnOffGoogle2FA')
+            ->name('security.setup-g2fa');
+        Route::post('turn-off-g2fa', 'SecurityController@turnOffG2FA')
             ->middleware('password.confirmed')
-            ->name('security.turn-off-google2fa');
+            ->name('security.turn-off-g2fa');
     
         Route::get('view-backup-code', 'SecurityController@viewBackupCode')
             ->middleware('password.confirmed')

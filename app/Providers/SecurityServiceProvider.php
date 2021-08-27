@@ -3,9 +3,9 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use app\Helpers\SecurityActivityLogger;
+use App\Helpers\SecurityService;
 
-class LogSecurityActivityServiceProvider extends ServiceProvider
+class SecurityServiceProvider extends ServiceProvider
 {
     /**
      * Register services.
@@ -14,8 +14,8 @@ class LogSecurityActivityServiceProvider extends ServiceProvider
      */
     public function register()
     {
-        $this->app->singleton(SecurityActivityLogger::class, function ($app) {
-            return new SecurityActivityLogger();
+        $this->app->singleton(SecurityActivityService::class, function ($app) {
+            return new SecurityService();
         });
     }
 

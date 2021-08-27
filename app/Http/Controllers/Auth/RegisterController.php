@@ -4,17 +4,13 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\RegisterRequest;
+use App\Notifications\RegisteredNotification;
 use App\Models\User;
 use App\Models\PasswordReset;
-use App\Models\SecurityActivity;
-use App\Mail\Registered;
-
-use App\Helpers\SecurityActivityLogger;
-
+use App\Helpers\SecurityService;
 use Illuminate\Support\Facades\App;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\DB;
 
@@ -25,100 +21,103 @@ class RegisterController extends Controller
         return view('auth.register');
     }
 
-    public function register(RegisterRequest $request) {
-        $credentials = $request->except('_token');
-        $user = User::where('email', $credentials['email'])->first();
-        if ($user != null) { // account exists
-            return back()
-                ->withInput(['email' => $credentials['email']])
-                ->withErrors(['email' => 'Account exists. Please choose another email!']);
-        }
-
-        $username = $this->getUsernameFromEmail($credentials['email']);
-        $token = bin2hex(openssl_random_pseudo_bytes(32));
-        $expiry = time() + config('security.password_reset.token_timeout', 10800);
-        $expiry = date("Y-m-d H:i:s", $expiry);
+    public function register(RegisterRequest $request)
+    {
+        $data = $this->prepareDataForSave($request);
 
         DB::beginTransaction();
         try {
             // create a record in 'users' table
             $user = User::create([
-                'username' => $username,
-                'email' => $credentials['email'],
-                'password' => Hash::make($credentials['password']),
+                'username' => $data['username'],
+                'email' => $data['email'],
+                'password' => Hash::make($data['password']),
             ]);
 
             // create a record in 'password_resets' table
             PasswordReset::create([
-                'email' => $credentials['email'],
-                'token' => $token,
-                'expired_at' => $expiry,
+                'email' => $data['email'],
+                'token' => $data['token'],
+                'expired_at' => $data['expired_at'],
             ]);
+            $user->notify(new RegisteredNotification($user)); // notify for sending email
+
             DB::commit();
         } catch (\Throwable $e) {
             DB::rollBack();
             return abort(500);
         }
-        
-        Mail::to($credentials['email'])->send(new Registered($user->id, $username, $token)); // send email
+
         return view('auth.verify-account', [
-            'email' => $credentials['email'],
-            'expired_at' => $expiry,
+            'email' => $data['email'],
+            'expired_at' => $data['expired_at'],
         ]);
     }
 
-    private function getUsernameFromEmail($email) {
-        $nameArr = explode('@', $email);
-        $nameArr = explode('.', $nameArr[0]);
-        return $nameArr[0];
-    }
-
-    public function verify(Request $request, $id, $token)
+    public function verify(Request $request, User $user, $token)
     {
-        // validate request URI
-        $validator = Validator::make([
-            'id' => $id,
-            'token' => $token
-        ], [
-            'id' => 'required|integer',
-            'token' => 'required|string',
-        ]);
-        if ($validator->fails()) {
-            return abort(400);
-        }
-        
-        $user = $this->findUserByIdOrFail($id);
-        $resetPassword = $user->resetPassword;
-
-        $logger = App::make(SecurityActivityLogger::class);
-        $description = config('security.strings.verify-email');
-        $securityActivity = $logger->getModelForSave($request, $id, $description);
-
-        $isValid = strtotime($resetPassword->expired_at) >= time();
-        $isValid = $isValid && ($token == $resetPassword->token);
-        if ($isValid) {
-            $user->email_verified_at = date('Y-m-d H:i:s');
-            $resetPassword->expired_at = date('Y-m-d H:i:s');
+        if ($this->checkToken($user, $token)) {
             DB::beginTransaction();
             try {
-                $user->save();
-                $resetPassword->save();
-                $securityActivity->save();
+                $user->update([
+                    'email_verified_at' => date('Y-m-d H:i:s'),
+                ]);
+                $user->passwordReset()->update([
+                    'expired_at' => date('Y-m-d H:i:s'),
+                ]);
+                App::make(SecurityService::class)
+                    ->log($request, $user->id, 'verify-email');
                 DB::commit();
             } catch (\Throwable $e) {
                 DB::rollBack();
-                return abort(500); // not handle
+                return abort(500);
             }
             return view('account.verify-complete');
         }
-        return abort(400); // not handle
+        return abort(400);
     }
 
-    private function findUserByIdOrFail($id) {
-        $user = User::find($id);
-        if ($user == null) {
-            return abort(400);
+    /**
+     * @return array
+     */
+    private function prepareDataForSave(RegisterRequest $request)
+    {
+        $data = [];
+        $data['email'] = $request->input('email');
+        $data['username'] = extractNameFrom($data['email']);
+        $data['password'] = $request->input('password');
+
+        $tokenLength = config('security.token.length', 32);
+        $data['token'] = bin2hex(openssl_random_pseudo_bytes($tokenLength));
+
+        $expiry = time() + config('security.password_reset.token_timeout', 10800);
+        $data['expired_at'] = date("Y-m-d H:i:s", $expiry);
+
+        return $data;
+    }
+
+    private function checkToken(User $user, $inputToken)
+    {
+        $this->validateInputToken($inputToken);
+
+        $passwordReset = $user->passwordReset;
+        if ($passwordReset == null) {
+            abort(500);
         }
-        return $user;
+        $isValidTime = strtotime($passwordReset->expired_at) >= time();
+        $isValidToken = ($inputToken == $passwordReset->token);
+        return $isValidTime && $isValidToken;
+    }
+
+    private function validateInputToken($inputToken)
+    {
+        $validator = Validator::make([
+            'input_token' => $inputToken,
+        ], [
+            'input_token' => 'required|string',
+        ]);
+        if ($validator->fails()) {
+            abort(400);
+        }
     }
 }

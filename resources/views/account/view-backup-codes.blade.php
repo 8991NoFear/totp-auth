@@ -8,10 +8,10 @@
     <div class="d-flex flex-row justify-content-between align-items-center border rounded-3 p-3 text-start">
         @if ($backupCodes->isNotEmpty())
         <p class="p-0 m-0 col-sm-8">Re-enable Google2FA to re-create backup codes</p>
-        <a class="btn btn-primary" href="{{ route('account.security.setup-google2fa') }}">RE-CREATE</a>
+        <a class="btn btn-primary" href="{{ route('account.security.temporary-setup-g2fa') }}">RE-CREATE</a>
         @else
         <p class="p-0 m-0 col-sm-8">Turn on Google2FA to create backup codes</p>
-        <a class="btn btn-primary" href="{{ route('account.security.setup-google2fa') }}">TURN ON</a>
+        <a class="btn btn-primary" href="{{ route('account.security.temporary-setup-g2fa') }}">TURN ON</a>
         @endif
     </div>
 </div>

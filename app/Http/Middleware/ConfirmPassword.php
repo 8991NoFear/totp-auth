@@ -2,9 +2,10 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\AuthenticationService;
 use Closure;
 use Illuminate\Http\Request;
-use App\Models\User;
+use Illuminate\Support\Facades\App;
 
 class ConfirmPassword
 {
@@ -18,13 +19,10 @@ class ConfirmPassword
     public function handle(Request $request, Closure $next)
     {
         $this->setIntendedURL($request);
-        // Confirm before
-        if ($request->session()->has('user.password_confirmed_at')) {
-            $pca = strtotime($request->session()->get('user.password_confirmed_at'));
-            $pca += config('security.password_reset.token_timeout');
-            if ($pca >= time()) {
-                return $next($request);
-            }
+        // if confirmed before
+        $authenticationService = App::make(AuthenticationService::class);
+        if ($authenticationService->checkConfirmedPassword()) {
+            return $next($request);
         }
         return redirect(route('auth.confirm-password.index'));
     }

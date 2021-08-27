@@ -2,9 +2,11 @@
 
 namespace App\Http\Middleware;
 
+use App\Helpers\AuthenticationService;
 use Closure;
 use Illuminate\Http\Request;
 use App\Models\User;
+use Illuminate\Support\Facades\App;
 
 class AuthNormal
 {
@@ -17,16 +19,16 @@ class AuthNormal
      */
     public function handle(Request $request, Closure $next)
     {
-        if ($request->session()->has('user.loginedNormal')) {
+        $authenticationService = App::make(AuthenticationService::class);
+
+        if ($authenticationService->levelLogin() == AuthenticationService::LEVEL_LOGIN_NORMAL) {
             return $next($request);
         }
 
         $rememberToken = $request->cookie('remember_token');
         if ($rememberToken != null) {
-            $user = User::where('remember_token', $rememberToken)->first();
+            $user = $authenticationService->attemptRemember($rememberToken);
             if ($user != null) {
-                $request->session()->put('user.userId', $user->id);
-                $request->session()->put('user.loginedNormal', true);
                 return $next($request);
             }
         }

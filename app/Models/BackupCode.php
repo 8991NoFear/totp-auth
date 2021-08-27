@@ -9,7 +9,9 @@ class BackupCode extends Model
 {
     use HasFactory;
 
-    protected $table = 'backup_codes';
+    public $table = 'backup_codes';
 
     public $timestamps = false;
+
+    public $guarded = ['id'];
 }
